@@ -132,9 +132,7 @@
         <h2>Inputs</h2>
 
         <label class="field-label">Channel Partner</label>
-        <select id="partnerSelect" onchange="onPartnerChange()">
-          <option value="">Loading partners...</option>
-        </select>
+        <input type="text" id="partnerName" placeholder="e.g. AON">
 
         <label class="field-label">Prospect Name</label>
         <input type="text" id="prospectName" placeholder="e.g. PWGA">
@@ -233,38 +231,9 @@
 </div>
 
 <script>
-  // ── State ──
+  // ââ State ââ
   let selectedSubs = new Set(['tud','aud','cud','oud']);
   let lastCalc = null;
-  let partners = [];
-
-  // ── Init: load partners from sheet ──
-  google.script.run
-    .withSuccessHandler(function(data) {
-      partners = data;
-      const sel = document.getElementById('partnerSelect');
-      sel.innerHTML = '<option value="">— Select partner —</option>';
-      data.forEach(function(p) {
-        const opt = document.createElement('option');
-        opt.value = p.name;
-        opt.textContent = p.name + ' (' + p.pricingModel + ')';
-        opt.dataset.model = p.pricingModel;
-        sel.appendChild(opt);
-      });
-    })
-    .withFailureHandler(function(err) {
-      document.getElementById('partnerSelect').innerHTML =
-        '<option value="">Error loading partners</option>';
-    })
-    .getPartners();
-
-  function onPartnerChange() {
-    const sel = document.getElementById('partnerSelect');
-    const opt = sel.options[sel.selectedIndex];
-    if (opt && opt.dataset.model) {
-      document.getElementById('pricingModel').value = opt.dataset.model;
-    }
-  }
 
   function toggleSub(el, sub) {
     if (selectedSubs.has(sub)) { selectedSubs.delete(sub); el.classList.remove('active'); }
@@ -276,7 +245,7 @@
   function fmtD(n) { return '$' + n.toLocaleString('en-US'); }
   function fmtM(n) { return '$' + (n / 1e6).toFixed(1) + 'M'; }
 
-  // ── Preview ──
+  // ââ Preview ââ
   function runCalc() {
     const el = parseInt(document.getElementById('eligibleLives').value);
     const pm = document.getElementById('pricingModel').value;
@@ -333,7 +302,7 @@
     document.getElementById('successBanner').classList.remove('show');
   }
 
-  // ── Generate Slide ──
+  // ââ Generate Slide ââ
   function generateSlide() {
     var btn = document.getElementById('generateBtn');
     btn.disabled = true;
@@ -342,7 +311,7 @@
 
     var params = {
       prospectName: document.getElementById('prospectName').value || 'Prospect',
-      partnerName: document.getElementById('partnerSelect').value || 'Partner',
+      partnerName: document.getElementById('partnerName').value || 'Partner',
       eligibleLives: parseInt(document.getElementById('eligibleLives').value),
       pricingModel: document.getElementById('pricingModel').value,
       substances: Array.from(selectedSubs),
@@ -363,7 +332,7 @@
         btn.disabled = false;
         showError('Failed to generate slide: ' + err.message);
       })
-      .generateSlideV2(params);
+      .generateSlide(params);
   }
 
   function showError(msg) { var e = document.getElementById('errorMsg'); e.textContent = msg; e.style.display = 'block'; }
